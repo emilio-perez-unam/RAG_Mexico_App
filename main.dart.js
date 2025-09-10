@@ -86723,7 +86723,7 @@ ao(){return new A.Wb(new A.rk(B.fr,$.aw()),A.Qf(),A.c([],t.SU))}}
 A.Wb.prototype={
 aA(){var s,r,q,p,o,n,m,l=this
 l.aU()
-try{s="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"
+try{s="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"
 q=new A.afl()
 p=t.N
 o=A.a7(["HTTP-Referer","https://legalragmexico.com","X-Title","Legal RAG Mexico","Content-Type","application/json"],p,p)
@@ -86781,7 +86781,7 @@ j=new A.cg("")
 p=8
 a0=m.d
 a0===$&&A.a()
-a0=new A.rZ(A.jH(a0.pg(4000,k,"qwen/qwen3-235b-a22b-thinking-2507",l,0.7),"stream",t.K))
+a0=new A.rZ(A.jH(a0.pg(1e5,k,"qwen/qwen3-235b-a22b-thinking-2507",l,0.7),"stream",t.K))
 p=11
 case 14:s=16
 return A.A(a0.u(),$async$mv)
@@ -86814,7 +86814,7 @@ A.aEt("Streaming failed, falling back to non-streaming: "+A.f(h))
 a0=m.d
 a0===$&&A.a()
 s=18
-return A.A(a0.wy(4000,k,"qwen/qwen3-235b-a22b-thinking-2507",l,0.7),$async$mv)
+return A.A(a0.wy(1e5,k,"qwen/qwen3-235b-a22b-thinking-2507",l,0.7),$async$mv)
 case 18:a6=b1
 g=a6
 a0=j
