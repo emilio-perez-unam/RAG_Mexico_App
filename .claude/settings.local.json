@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(touch:*)",
+      "Bash(dart analyze:*)",
+      "Bash(for file in /mnt/e/Development/Projects/Clients/legaltracking/RAG_Mexico_App/lib/data/datasources/**/*.dart)",
+      "Bash(do wc:*)",
+      "Bash(done)",
+      "Bash(flutter analyze:*)",
+      "Bash(flutter pub:*)",
+      "WebSearch",
+      "WebFetch(domain:openrouter.ai)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
