@@ -12,6 +12,14 @@ class SearchResult extends Equatable {
     required this.snippet,
   });
 
+  factory SearchResult.fromJson(Map<String, dynamic> json) {
+    return SearchResult(
+      document: LegalDocument.fromJson(json['document'] as Map<String, dynamic>),
+      relevanceScore: (json['relevanceScore'] as num).toDouble(),
+      snippet: json['snippet'] as String,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'document': document.toJson(),

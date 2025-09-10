@@ -1,24 +1,24 @@
 import 'package:dartz/dartz.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:math';
+
 import '../../core/errors/failures.dart';
 import '../../domain/entities/legal_document.dart';
 import '../../domain/entities/search_result.dart';
 import '../../domain/repositories/legal_search_repository.dart';
-import '../datasources/remote/deepseek_datasource.dart';
-import '../datasources/remote/milvus_datasource.dart';
 import '../datasources/local/search_history_local_datasource.dart';
 
-/// Implementation of LegalSearchRepository
+/// Secure implementation of the LegalSearchRepository.
+/// This repository communicates with a Supabase Edge Function to perform RAG searches,
+/// ensuring no sensitive credentials or logic are exposed on the client-side.
 class LegalSearchRepositoryImpl implements LegalSearchRepository {
-  final DeepSeekDatasource _deepSeekDatasource;
-  final MilvusDatasource _milvusDatasource;
+  final SupabaseClient _supabaseClient;
   final SearchHistoryLocalDatasource _searchHistoryDatasource;
 
   LegalSearchRepositoryImpl({
-    required DeepSeekDatasource deepSeekDatasource,
-    required MilvusDatasource milvusDatasource,
+    required SupabaseClient supabaseClient,
     required SearchHistoryLocalDatasource searchHistoryDatasource,
-  })  : _deepSeekDatasource = deepSeekDatasource,
-        _milvusDatasource = milvusDatasource,
+  })  : _supabaseClient = supabaseClient,
         _searchHistoryDatasource = searchHistoryDatasource;
 
   @override
@@ -28,51 +28,27 @@ class LegalSearchRepositoryImpl implements LegalSearchRepository {
     int? limit,
   }) async {
     try {
-      // First, try to search in Milvus vector database
-      final vectorResults = await _milvusDatasource.searchVectors(
-        queryVector: _generateQueryVector(query),
-        limit: limit ?? 20,
-        filters: filters,
+      // Securely call the backend Edge Function to perform the RAG search.
+      // The function handles embedding, vector search (Milvus), and response generation.
+      final response = await _supabaseClient.functions.invoke(
+        'rag-search', // This is the name of your Edge Function on Supabase
+        body: {
+          'query': query,
+          'filters': filters,
+          'limit': limit,
+        },
       );
 
-      // Convert vector results to search results
-      final results = vectorResults.map((result) {
-        final document = LegalDocument(
-          id: result['id'] as String,
-          title: result['title'] as String,
-          summary: result['summary'] as String? ?? '',
-          content: result['content'] as String? ?? '',
-          publicationDate: result['publicationDate'] != null 
-              ? DateTime.parse(result['publicationDate'] as String)
-              : DateTime.now(),
-          documentType: result['documentType'] as String? ?? 'unknown',
-          keywords: result['keywords'] != null 
-              ? List<String>.from(result['keywords'] as List)
-              : [],
-        );
-        
-        return SearchResult(
-          document: document,
-          snippet: result['snippet'] as String? ?? '',
-          relevanceScore: result['score'] as double? ?? 0.0,
-        );
-      }).toList();
-
-      // If no results from vector search, fall back to DeepSeek
-      if (results.isEmpty) {
-        final response = await _deepSeekDatasource.sendMessage(
-          query,
-          model: 'deepseek-reasoner',
-          enforceThinking: true,
-        );
-
-        // Parse response into search results
-        final content = response.content;
-        final parsedResults = _parseSearchResults(content);
-        results.addAll(parsedResults);
+      if (response.status != 200) {
+        throw Exception('Failed to execute search: ${response.data}');
       }
 
-      // Save search to history
+      final List<dynamic> data = response.data['results'];
+      final results = data
+          .map((item) => SearchResult.fromJson(item as Map<String, dynamic>))
+          .toList();
+
+      // Save the successful search to local history
       await _saveSearchToHistory(query, results);
 
       return Right(results);
@@ -81,23 +57,23 @@ class LegalSearchRepositoryImpl implements LegalSearchRepository {
     }
   }
 
-  @override
-  Future<Either<Failure, List<String>>> getSearchSuggestions(String partialQuery) async {
-    try {
-      // Get recent search history
-      final history = await _searchHistoryDatasource.getSearchHistory();
-      
-      // Filter and rank suggestions based on partial query
-      final suggestions = history
-          .where((item) => 
-              item['query'] is String && 
-              (item['query'] as String).toLowerCase().contains(partialQuery.toLowerCase()))
-          .map((item) => item['query'] as String)
-          .toSet() // Remove duplicates
-          .toList()
-          .take(10) // Limit to 10 suggestions
-          .toList();
+  // --- Local Search History Methods remain the same ---
 
+  @override
+  Future<Either<Failure, List<String>>> getSearchSuggestions(
+      String partialQuery) async {
+    try {
+      final history = await _searchHistoryDatasource.getSearchHistory();
+      final suggestions = history
+          .where((item) =>
+              item['query'] is String &&
+              (item['query'] as String)
+                  .toLowerCase()
+                  .contains(partialQuery.toLowerCase()))
+          .map((item) => item['query'] as String)
+          .toSet()
+          .take(10)
+          .toList();
       return Right(suggestions);
     } catch (e) {
       return Left(ServerFailure('Failed to get search suggestions: $e'));
@@ -147,37 +123,24 @@ class LegalSearchRepositoryImpl implements LegalSearchRepository {
     }
   }
 
+  // This logic must now live in the backend. The client requests it via the Edge Function.
   @override
-  Future<Either<Failure, List<LegalDocument>>> getRelatedDocuments(String documentId) async {
+  Future<Either<Failure, List<LegalDocument>>> getRelatedDocuments(
+      String documentId) async {
     try {
-      // Get the document to find related ones
-      final document = await _milvusDatasource.getVectorById(documentId);
-      if (document == null) {
-        return const Left(ServerFailure('Document not found'));
-      }
-
-      // Search for similar documents
-      final related = await _milvusDatasource.searchVectors(
-        queryVector: _generateQueryVector(document['content'] as String),
-        limit: 10,
+      final response = await _supabaseClient.functions.invoke(
+        'get-related-documents',
+        body: {'documentId': documentId},
       );
 
-      // Convert to LegalDocument entities
-      final documents = related.map((doc) {
-        return LegalDocument(
-          id: doc['id'] as String,
-          title: doc['title'] as String,
-          summary: doc['summary'] as String? ?? '',
-          content: doc['content'] as String,
-          publicationDate: doc['publicationDate'] != null 
-              ? DateTime.parse(doc['publicationDate'] as String)
-              : DateTime.now(),
-          documentType: doc['documentType'] as String? ?? 'unknown',
-          keywords: doc['keywords'] != null 
-              ? List<String>.from(doc['keywords'] as List)
-              : [],
-        );
-      }).toList();
+      if (response.status != 200) {
+        throw Exception('Failed to get related documents: ${response.data}');
+      }
+
+      final List<dynamic> data = response.data['documents'];
+      final documents = data
+          .map((item) => LegalDocument.fromJson(item as Map<String, dynamic>))
+          .toList();
 
       return Right(documents);
     } catch (e) {
@@ -185,13 +148,11 @@ class LegalSearchRepositoryImpl implements LegalSearchRepository {
     }
   }
 
+  // This can still be derived from local history.
   @override
   Future<Either<Failure, List<String>>> getTrendingSearches() async {
     try {
-      // Get search history and count occurrences
       final history = await _searchHistoryDatasource.getSearchHistory();
-      
-      // Count query frequencies
       final queryCounts = <String, int>{};
       for (final item in history) {
         final query = item['query'] as String?;
@@ -199,54 +160,19 @@ class LegalSearchRepositoryImpl implements LegalSearchRepository {
           queryCounts[query] = (queryCounts[query] ?? 0) + 1;
         }
       }
-      
-      // Sort by frequency and take top 10
       final sortedQueries = queryCounts.entries.toList()
         ..sort((a, b) => b.value.compareTo(a.value));
-      
-      final trending = sortedQueries
-          .take(10)
-          .map((entry) => entry.key)
-          .toList();
-
+      final trending =
+          sortedQueries.take(10).map((entry) => entry.key).toList();
       return Right(trending);
     } catch (e) {
       return Left(ServerFailure('Failed to get trending searches: $e'));
     }
   }
 
-  /// Generate a query vector for similarity search
-  List<double> _generateQueryVector(String query) {
-    // In a real implementation, this would use an embedding model
-    // For now, we'll return a mock vector
-    return List<double>.filled(128, 0.5); // Mock 128-dimensional vector
-  }
-
-  /// Parse search results from DeepSeek response
-  List<SearchResult> _parseSearchResults(String content) {
-    // In a real implementation, this would parse structured output
-    // For now, we'll return a mock result
-    final document = LegalDocument(
-      id: 'mock-${DateTime.now().millisecondsSinceEpoch}',
-      title: 'Mock Result',
-      summary: content.substring(0, min(content.length, 200)),
-      content: content,
-      publicationDate: DateTime.now(),
-      documentType: 'ai-generated',
-      keywords: const [],
-    );
-    
-    return [
-      SearchResult(
-        document: document,
-        snippet: content.substring(0, min(content.length, 200)),
-        relevanceScore: 0.8,
-      ),
-    ];
-  }
-
   /// Save search to local history
-  Future<void> _saveSearchToHistory(String query, List<SearchResult> results) async {
+  Future<void> _saveSearchToHistory(
+      String query, List<SearchResult> results) async {
     final searchData = {
       'id': DateTime.now().millisecondsSinceEpoch.toString(),
       'query': query,
@@ -254,10 +180,6 @@ class LegalSearchRepositoryImpl implements LegalSearchRepository {
       'resultsCount': results.length,
       'results': results.map((r) => r.toJson()).toList(),
     };
-
     await _searchHistoryDatasource.saveSearchHistory(searchData);
   }
-
-  /// Helper function for min
-  int min(int a, int b) => a < b ? a : b;
 }

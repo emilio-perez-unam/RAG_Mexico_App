@@ -19,18 +19,23 @@ class LegalDocument extends Equatable {
     required this.keywords,
   });
 
+// Add this inside your LegalDocument class
+
   factory LegalDocument.fromJson(Map<String, dynamic> json) {
     return LegalDocument(
       id: json['id'] as String,
       title: json['title'] as String,
-      summary: json['summary'] as String,
-      content: json['content'] as String,
-      publicationDate: DateTime.parse(json['publicationDate'] as String),
-      documentType: json['documentType'] as String,
-      keywords: List<String>.from(json['keywords'] as List),
+      summary: json['summary'] as String? ?? '',
+      content: json['content'] as String? ?? '',
+      publicationDate: json['publicationDate'] != null
+          ? DateTime.parse(json['publicationDate'] as String)
+          : DateTime.now(),
+      documentType: json['documentType'] as String? ?? 'unknown',
+      keywords: json['keywords'] != null
+          ? List<String>.from(json['keywords'] as List)
+          : [],
     );
   }
-
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -44,5 +49,6 @@ class LegalDocument extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, title, summary, content, publicationDate, documentType, keywords];
+  List<Object?> get props =>
+      [id, title, summary, content, publicationDate, documentType, keywords];
 }
