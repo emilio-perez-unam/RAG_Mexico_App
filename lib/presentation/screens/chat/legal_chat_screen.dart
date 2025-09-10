@@ -62,7 +62,7 @@ class _LegalChatScreenState extends State<LegalChatScreen> {
     // Get API key from environment configuration
     try {
       // Hardcoded for immediate testing
-      final apiKey = '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';
+      final apiKey = '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';
       // Use the OpenAI Dart library for proper streaming support
       _openRouterDatasource = OpenRouterOpenAIDatasource(
         apiKey: apiKey,
@@ -181,6 +181,7 @@ class _LegalChatScreenState extends State<LegalChatScreen> {
     try {
       // --- LIVE API CALL ---
       // Build conversation history for context
+      // With 256k context window and 100k max output, we have ~156k for history
       final history = _messages
           .where((m) => !m.isError) // Don't include previous errors in history
           .map((m) => {
@@ -243,7 +244,7 @@ class _LegalChatScreenState extends State<LegalChatScreen> {
           model: _selectedModel,  // Use the selected model
           previousMessages: history,
           temperature: 0.7,
-          maxTokens: 4000,
+          maxTokens: 100000,
         )) {
           fullResponse.write(chunk);
           
@@ -274,7 +275,7 @@ class _LegalChatScreenState extends State<LegalChatScreen> {
           model: _selectedModel,
           previousMessages: history,
           temperature: 0.7,
-          maxTokens: 4000,
+          maxTokens: 100000,
         );
         
         fullResponse.write(response);

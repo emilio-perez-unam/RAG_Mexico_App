@@ -37,7 +37,7 @@ class OpenRouterOpenAIDatasource {
     String model = 'qwen/qwen3-235b-a22b-thinking-2507',
     List<Map<String, dynamic>>? previousMessages,
     double temperature = 0.7,
-    int maxTokens = 4000,
+    int maxTokens = 100000,
   }) async* {
     try {
       print('Sending streaming request to OpenRouter...');
@@ -112,7 +112,7 @@ class OpenRouterOpenAIDatasource {
     String model = 'qwen/qwen3-235b-a22b-thinking-2507',
     List<Map<String, dynamic>>? previousMessages,
     double temperature = 0.7,
-    int maxTokens = 4000,
+    int maxTokens = 100000,
   }) async {
     try {
       // Build messages list
