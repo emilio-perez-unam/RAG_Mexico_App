@@ -85948,7 +85948,7 @@ return B.uN},
 $S:521}
 A.uf.prototype={
 gabJ(){return B.c.bu(A.an8().j(0),"https://")},
-gt0(){if(this.gabJ())return"https://corsproxy.io/?http://5.161.120.86:8000"
+gt0(){if(this.gabJ())return"https://proxy.cors.sh/http://5.161.120.86:8000"
 return"http://5.161.120.86:8000"}}
 A.uX.prototype={$iaId:1}
 A.vE.prototype={$iaJ3:1}
