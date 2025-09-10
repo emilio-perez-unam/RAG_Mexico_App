@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 /// Environment configuration class with hardcoded values
 /// No dependency on .env files - suitable for GitHub Pages deployment
 class EnvConfig {
@@ -22,11 +24,27 @@ class EnvConfig {
       );
     }
   }
+  
+  /// Check if running on HTTPS (for GitHub Pages)
+  bool get _isHttps {
+    if (kIsWeb) {
+      final currentUrl = Uri.base.toString();
+      return currentUrl.startsWith('https://');
+    }
+    return false;
+  }
 
   // ============================================
   // SUPABASE CONFIGURATION
   // ============================================
-  String get supabaseUrl => 'http://5.161.120.86:8000';
+  String get supabaseUrl {
+    // Use CORS proxy when running on HTTPS (GitHub Pages)
+    if (_isHttps) {
+      return 'https://corsproxy.io/?http://5.161.120.86:8000';
+    }
+    return 'http://5.161.120.86:8000';
+  }
+  
   String get supabaseAnonKey => 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzU3NDQxNTQ3LCJleHAiOjIwNzI4MDE1NDd9.yMsImS7M2UL_9T1a375Lsvu9hGWADaX4dj4xIIfreno';
   String get supabaseServiceKey => 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjdmJua2xqZGZqYXNkZmFzZGZhc2RmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY0NTQ0NjQwMCwiZXhwIjoxOTYxMDIyNDAwfQ.9v_bVZVwvxMNgEzxLR8PbPj8zTBqp7wy0OHgHIF9eH8';
 
@@ -46,7 +64,14 @@ class EnvConfig {
   // ============================================
   // API ENDPOINTS
   // ============================================
-  String get apiBaseUrl => 'http://5.161.120.86:8000';
+  String get apiBaseUrl {
+    // Use CORS proxy when running on HTTPS (GitHub Pages)
+    if (_isHttps) {
+      return 'https://corsproxy.io/?http://5.161.120.86:8000';
+    }
+    return 'http://5.161.120.86:8000';
+  }
+  
   String get restApiUrl => '$apiBaseUrl/rest/v1/';
   String get authApiUrl => '$apiBaseUrl/auth/v1/';
   String get storageApiUrl => '$apiBaseUrl/storage/v1/';
