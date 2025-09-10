@@ -40,7 +40,8 @@ class EnvConfig {
   String get supabaseUrl {
     // Use CORS proxy when running on HTTPS (GitHub Pages)
     if (_isHttps) {
-      return 'https://corsproxy.io/?http://5.161.120.86:8000';
+      // Using proxy.cors.sh which handles API requests better
+      return 'https://proxy.cors.sh/http://5.161.120.86:8000';
     }
     return 'http://5.161.120.86:8000';
   }
@@ -67,7 +68,8 @@ class EnvConfig {
   String get apiBaseUrl {
     // Use CORS proxy when running on HTTPS (GitHub Pages)
     if (_isHttps) {
-      return 'https://corsproxy.io/?http://5.161.120.86:8000';
+      // Using proxy.cors.sh which handles API requests better
+      return 'https://proxy.cors.sh/http://5.161.120.86:8000';
     }
     return 'http://5.161.120.86:8000';
   }
