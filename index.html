@@ -31,6 +31,15 @@
 
   <title>legal_rag_mexico</title>
   <link rel="manifest" href="manifest.json">
+  
+  <script>
+    // Register custom service worker for CORS handling
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/service_worker.js');
+      });
+    }
+  </script>
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>
