@@ -146,13 +146,13 @@ class AuthDatasourceImpl implements AuthDatasource {
       _logger.i('Datasource: Attempting sign in for $email');
       _logger.d('Calling Supabase signInWithPassword');
       
-      // Debug: Print what's being sent
-      print('===== SUPABASE AUTH REQUEST =====');
-      print('Supabase URL: ${EnvConfig.instance.supabaseUrl}');
-      print('Email being sent: $email');
-      print('Password length: ${password.length} characters');
-      print('Auth endpoint: ${EnvConfig.instance.supabaseUrl}/auth/v1/token?grant_type=password');
-      print('================================');
+      // Debug: Log what's being sent
+      _logger.d('===== SUPABASE AUTH REQUEST =====');
+      _logger.d('Supabase URL: ${EnvConfig.instance.supabaseUrl}');
+      _logger.d('Email being sent: $email');
+      _logger.d('Password length: ${password.length} characters');
+      _logger.d('Auth endpoint: ${EnvConfig.instance.supabaseUrl}/auth/v1/token?grant_type=password');
+      _logger.d('================================');
       
       final response = await _supabaseClient.auth.signInWithPassword(
         email: email,

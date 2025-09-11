@@ -9,7 +9,8 @@
       "Bash(flutter analyze:*)",
       "Bash(flutter pub:*)",
       "WebSearch",
-      "WebFetch(domain:openrouter.ai)"
+      "WebFetch(domain:openrouter.ai)",
+      "Bash(flutter build:*)"
     ],
     "deny": [],
     "ask": []

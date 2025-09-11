@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORS Test - Legal RAG Mexico</title>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f7;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1d1d1f;
+            margin-bottom: 30px;
+        }
+        button {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background: #0051D5;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .loading {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔒 CORS Test for Legal RAG Mexico</h1>
+        
+        <div>
+            <button onclick="testDirectAPI()">Test Direct OpenRouter API</button>
+            <button onclick="testWorkerProxy()">Test Cloudflare Worker Proxy</button>
+            <button onclick="testStreamingAPI()">Test Streaming Response</button>
+        </div>
+        
+        <div id="status" class="status info">
+            Ready to test CORS configuration...
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = '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';
+        const DIRECT_URL = 'https://openrouter.ai/api/v1/chat/completions';
+        const WORKER_URL = 'https://openrouter-proxy.emilio-perez.workers.dev/api/v1/chat/completions';
+        
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+        
+        async function testDirectAPI() {
+            updateStatus('Testing direct OpenRouter API...', 'loading');
+            
+            try {
+                const response = await fetch(DIRECT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`,
+                        'HTTP-Referer': 'https://legalragmexico.com',
+                        'X-Title': 'Legal RAG Mexico'
+                    },
+                    body: JSON.stringify({
+                        model: 'qwen/qwen3-235b-a22b-thinking-2507',
+                        messages: [
+                            { role: 'user', content: 'Say "CORS test successful" in 5 words or less' }
+                        ],
+                        max_tokens: 10,
+                        temperature: 0.1
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    updateStatus(`✅ Direct API Success!\n\nResponse: ${JSON.stringify(data, null, 2)}`, 'success');
+                } else {
+                    updateStatus(`❌ Direct API Error: ${response.status}\n\n${JSON.stringify(data, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                updateStatus(`❌ Direct API Failed (Expected - CORS Block):\n\n${error.toString()}\n\nThis is normal and why we need the proxy.`, 'error');
+            }
+        }
+        
+        async function testWorkerProxy() {
+            updateStatus('Testing Cloudflare Worker proxy...', 'loading');
+            
+            try {
+                const response = await fetch(WORKER_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`,
+                        'HTTP-Referer': 'https://legalragmexico.com',
+                        'X-Title': 'Legal RAG Mexico'
+                    },
+                    body: JSON.stringify({
+                        model: 'qwen/qwen3-235b-a22b-thinking-2507',
+                        messages: [
+                            { role: 'user', content: 'Say "Worker proxy successful" in 5 words or less' }
+                        ],
+                        max_tokens: 10,
+                        temperature: 0.1
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    updateStatus(`✅ Worker Proxy Success!\n\nResponse: ${JSON.stringify(data, null, 2)}`, 'success');
+                } else {
+                    updateStatus(`❌ Worker Proxy Error: ${response.status}\n\n${JSON.stringify(data, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                updateStatus(`❌ Worker Proxy Failed:\n\n${error.toString()}\n\nCheck:\n1. Worker is deployed\n2. Worker URL is correct\n3. API key is valid`, 'error');
+            }
+        }
+        
+        async function testStreamingAPI() {
+            updateStatus('Testing streaming response via Worker...', 'loading');
+            
+            try {
+                const response = await fetch(WORKER_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`,
+                        'HTTP-Referer': 'https://legalragmexico.com',
+                        'X-Title': 'Legal RAG Mexico'
+                    },
+                    body: JSON.stringify({
+                        model: 'qwen/qwen3-235b-a22b-thinking-2507',
+                        messages: [
+                            { role: 'user', content: 'Count from 1 to 5' }
+                        ],
+                        max_tokens: 50,
+                        temperature: 0.1,
+                        stream: true
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.text();
+                    updateStatus(`❌ Streaming Error: ${response.status}\n\n${error}`, 'error');
+                    return;
+                }
+                
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let fullResponse = '';
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    const chunk = decoder.decode(value);
+                    fullResponse += chunk;
+                    updateStatus(`✅ Streaming Working!\n\nReceived so far:\n${fullResponse}`, 'success');
+                }
+                
+                updateStatus(`✅ Streaming Complete!\n\nFull Response:\n${fullResponse}`, 'success');
+                
+            } catch (error) {
+                updateStatus(`❌ Streaming Failed:\n\n${error.toString()}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

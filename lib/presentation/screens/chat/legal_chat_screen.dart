@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:developer'; // For logging errors.
+import 'package:logger/logger.dart';
 
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/config/env_config.dart';
 import '../../../../data/datasources/remote/openrouter_openai_datasource.dart';
-import '../../../../data/datasources/remote/openrouter_datasource.dart';
-import 'package:dio/dio.dart';
-import '../../../../injection_container.dart';
 import 'widgets/ai_response_message.dart';
 import 'widgets/message_input.dart';
 import 'widgets/user_message_bubble.dart';
@@ -41,19 +38,24 @@ class LegalChatScreen extends StatefulWidget {
 class _LegalChatScreenState extends State<LegalChatScreen> {
   // Removed unused _legalRagService and only keep the datasource.
   late final OpenRouterOpenAIDatasource _openRouterDatasource;
-  late final OpenRouterDatasource _openRouterDatasourceFallback; // Dio-based fallback
   String _currentStreamingMessage = '';
-  bool _isStreaming = false;
+  final Logger _logger = Logger(
+    printer: PrettyPrinter(
+      methodCount: 0,
+      errorMethodCount: 5,
+      lineLength: 50,
+      colors: true,
+      printEmojis: false,
+    ),
+  );
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final List<ChatMessage> _messages = [];
   bool _isLoading = false;
   
-  // Model selection - you can switch between different models
-  // Options: 'qwen/qwen3-235b-a22b-thinking-2507' (powerful reasoning)
-  //          'anthropic/claude-3.5-sonnet' (fast and high quality)
-  //          'openai/gpt-4-turbo-preview' (fast and reliable)
-  //          'meta-llama/llama-3.1-70b-instruct' (fast open source)
+  // Model selection - ONLY USE QWEN for this application
+  // Using: 'qwen/qwen3-235b-a22b-thinking-2507' (powerful reasoning, 64k tokens)
+  // DO NOT CHANGE - Other models like Claude are expensive and not configured for this app
   final String _selectedModel = 'qwen/qwen3-235b-a22b-thinking-2507';
 
   @override
@@ -62,12 +64,15 @@ class _LegalChatScreenState extends State<LegalChatScreen> {
     // Get API key from environment configuration
     try {
       // Hardcoded for immediate testing
-      final apiKey = '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';
+      const apiKey = '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';
       // Use the OpenAI Dart library for proper streaming support
       _openRouterDatasource = OpenRouterOpenAIDatasource(
         apiKey: apiKey,
       );
       _initializeChat();
+      
+      // Test API access to see if direct calls work
+      _testApiConnection();
     } catch (e) {
       log('Failed to initialize OpenRouter: $e');
       // Show error to user
@@ -81,6 +86,29 @@ class _LegalChatScreenState extends State<LegalChatScreen> {
           );
         }
       });
+    }
+  }
+  
+  Future<void> _testApiConnection() async {
+    final isAccessible = await _openRouterDatasource!.testApiAccess();
+    
+    if (mounted) {
+      if (isAccessible) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('API connection successful! Direct access is working.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Direct API access failed. CORS may be blocking requests on web.'),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 5),
+          ),
+        );
+      }
     }
   }
 
@@ -214,7 +242,6 @@ class _LegalChatScreenState extends State<LegalChatScreen> {
 
       // Initialize streaming message
       setState(() {
-        _isStreaming = true;
         _currentStreamingMessage = '';
         // Add a placeholder message that will be updated as content streams in
         _messages.add(ChatMessage(
@@ -278,12 +305,13 @@ class _LegalChatScreenState extends State<LegalChatScreen> {
           maxTokens: 100000,
         );
         
+        const streamDelay = Duration(milliseconds: 20);
         fullResponse.write(response);
         
         // Simulate streaming for better UX
         final words = response.split(' ');
         for (int i = 0; i < words.length; i++) {
-          await Future.delayed(Duration(milliseconds: 20));
+          await Future.delayed(streamDelay);
           
           setState(() {
             _currentStreamingMessage = words.take(i + 1).join(' ');
@@ -304,13 +332,12 @@ class _LegalChatScreenState extends State<LegalChatScreen> {
 
       // Final update with complete response
       final finalContent = fullResponse.toString();
-      print('===== STREAMING COMPLETE =====');
-      print('Total length: ${finalContent.length}');
+      _logger.d('===== STREAMING COMPLETE =====');
+      _logger.d('Total length: ${finalContent.length}');
       
       final structuredResponse = _parseLlmResponse(finalContent);
       
       setState(() {
-        _isStreaming = false;
         // Update the last message with the final parsed response
         if (_messages.isNotEmpty && !_messages.last.isUser) {
           _messages[_messages.length - 1] = ChatMessage(
@@ -449,7 +476,7 @@ class _LegalChatScreenState extends State<LegalChatScreen> {
         color: AppColors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),

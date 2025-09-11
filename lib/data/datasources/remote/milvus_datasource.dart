@@ -22,6 +22,25 @@ class MilvusDatasource {
     required this.dio,
   });
 
+  /// Factory constructor with default values
+  factory MilvusDatasource.withDefaults({
+    String? host,
+    int? port,
+    String? collection,
+    String? username,
+    String? password,
+    required Dio dio,
+  }) {
+    return MilvusDatasource(
+      host: host ?? _defaultHost,
+      port: port ?? _defaultPort,
+      collection: collection ?? _defaultCollection,
+      username: username,
+      password: password,
+      dio: dio,
+    );
+  }
+
   /// Connect to Milvus
   Future<bool> connect() async {
     try {

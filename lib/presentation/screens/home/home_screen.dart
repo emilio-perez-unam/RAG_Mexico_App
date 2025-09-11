@@ -4,7 +4,7 @@ import '../../../core/theme/text_styles.dart';
 import 'widgets/search_bar_widget.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

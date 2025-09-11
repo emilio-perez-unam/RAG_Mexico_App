@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug CORS - Legal RAG Mexico</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        .container {
+            background: #2d2d30;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        h1 { color: #4ec9b0; }
+        h2 { color: #dcdcaa; margin-top: 30px; }
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        button:hover { background: #005a9e; }
+        .log {
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #3e3e42;
+        }
+        .success { color: #4ec9b0; }
+        .error { color: #f48771; }
+        .info { color: #dcdcaa; }
+        .warning { color: #ce9178; }
+        code {
+            background: #3e3e42;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug CORS Configuration</h1>
+        
+        <h2>1. Test Worker Availability</h2>
+        <button onclick="testWorkerHealth()">Test Worker Health</button>
+        <button onclick="testWorkerOptions()">Test OPTIONS Request</button>
+        <div id="health-log" class="log">Ready...</div>
+        
+        <h2>2. Test Different Endpoints</h2>
+        <button onclick="testWorkerRoot()">Test Worker Root</button>
+        <button onclick="testWorkerAPI()">Test /api/v1</button>
+        <button onclick="testWorkerChat()">Test /api/v1/chat/completions</button>
+        <div id="endpoint-log" class="log">Ready...</div>
+        
+        <h2>3. Test OpenRouter API</h2>
+        <button onclick="testSimpleRequest()">Simple Test Request</button>
+        <button onclick="testWithHeaders()">Test With All Headers</button>
+        <button onclick="testMinimalRequest()">Test Minimal Request</button>
+        <div id="api-log" class="log">Ready...</div>
+        
+        <h2>4. Network Diagnostics</h2>
+        <button onclick="runFullDiagnostics()">Run Full Diagnostics</button>
+        <div id="diag-log" class="log">Ready...</div>
+    </div>
+
+    <script>
+        const API_KEY = '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';
+        const WORKER_BASE = 'https://openrouter-proxy.emilio-perez.workers.dev';
+        
+        function log(elementId, message, type = 'info') {
+            const logEl = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const colorClass = type;
+            logEl.innerHTML += `<span class="${colorClass}">[${timestamp}] ${message}</span>\n`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        function clearLog(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+        
+        // Test 1: Worker Health
+        async function testWorkerHealth() {
+            clearLog('health-log');
+            log('health-log', 'Testing worker availability...', 'info');
+            
+            try {
+                log('health-log', `Fetching: ${WORKER_BASE}/`, 'info');
+                const response = await fetch(`${WORKER_BASE}/`, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
+                log('health-log', `Response Status: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+                log('health-log', `Response Headers:`, 'info');
+                for (let [key, value] of response.headers.entries()) {
+                    log('health-log', `  ${key}: ${value}`, 'info');
+                }
+                
+                const text = await response.text();
+                log('health-log', `Response Body: ${text.substring(0, 200)}${text.length > 200 ? '...' : ''}`, 'info');
+                
+                if (response.ok) {
+                    log('health-log', '✅ Worker is responding!', 'success');
+                } else {
+                    log('health-log', '❌ Worker returned an error', 'error');
+                }
+            } catch (error) {
+                log('health-log', `❌ Failed to reach worker: ${error.message}`, 'error');
+                log('health-log', 'This might mean:', 'warning');
+                log('health-log', '  - Worker is not deployed', 'warning');
+                log('health-log', '  - Worker URL is incorrect', 'warning');
+                log('health-log', '  - Network/firewall issue', 'warning');
+            }
+        }
+        
+        // Test OPTIONS request (CORS preflight)
+        async function testWorkerOptions() {
+            clearLog('health-log');
+            log('health-log', 'Testing CORS preflight (OPTIONS)...', 'info');
+            
+            try {
+                const response = await fetch(`${WORKER_BASE}/api/v1/chat/completions`, {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'authorization,content-type'
+                    }
+                });
+                
+                log('health-log', `OPTIONS Status: ${response.status}`, response.ok ? 'success' : 'error');
+                log('health-log', 'CORS Headers:', 'info');
+                log('health-log', `  Access-Control-Allow-Origin: ${response.headers.get('access-control-allow-origin')}`, 'info');
+                log('health-log', `  Access-Control-Allow-Methods: ${response.headers.get('access-control-allow-methods')}`, 'info');
+                log('health-log', `  Access-Control-Allow-Headers: ${response.headers.get('access-control-allow-headers')}`, 'info');
+                
+                if (response.headers.get('access-control-allow-origin')) {
+                    log('health-log', '✅ CORS headers present!', 'success');
+                } else {
+                    log('health-log', '❌ Missing CORS headers', 'error');
+                }
+            } catch (error) {
+                log('health-log', `❌ OPTIONS request failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test 2: Different endpoints
+        async function testWorkerRoot() {
+            clearLog('endpoint-log');
+            await testEndpoint('/', 'endpoint-log');
+        }
+        
+        async function testWorkerAPI() {
+            clearLog('endpoint-log');
+            await testEndpoint('/api/v1', 'endpoint-log');
+        }
+        
+        async function testWorkerChat() {
+            clearLog('endpoint-log');
+            await testEndpoint('/api/v1/chat/completions', 'endpoint-log');
+        }
+        
+        async function testEndpoint(path, logId) {
+            const url = `${WORKER_BASE}${path}`;
+            log(logId, `Testing endpoint: ${url}`, 'info');
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
+                log(logId, `Status: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'warning');
+                const text = await response.text();
+                log(logId, `Response: ${text.substring(0, 100)}${text.length > 100 ? '...' : ''}`, 'info');
+            } catch (error) {
+                log(logId, `Failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test 3: OpenRouter API calls
+        async function testSimpleRequest() {
+            clearLog('api-log');
+            log('api-log', 'Sending simple test request...', 'info');
+            
+            const url = `${WORKER_BASE}/api/v1/chat/completions`;
+            const body = {
+                model: 'qwen/qwen3-235b-a22b-thinking-2507',
+                messages: [
+                    { role: 'user', content: 'Say "test"' }
+                ],
+                max_tokens: 5
+            };
+            
+            log('api-log', `URL: ${url}`, 'info');
+            log('api-log', `Body: ${JSON.stringify(body, null, 2)}`, 'info');
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`
+                    },
+                    body: JSON.stringify(body)
+                });
+                
+                log('api-log', `Status: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+                
+                const data = await response.text();
+                try {
+                    const json = JSON.parse(data);
+                    log('api-log', `Response: ${JSON.stringify(json, null, 2)}`, response.ok ? 'success' : 'error');
+                } catch {
+                    log('api-log', `Response (text): ${data}`, 'warning');
+                }
+                
+            } catch (error) {
+                log('api-log', `❌ Request failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testWithHeaders() {
+            clearLog('api-log');
+            log('api-log', 'Testing with all OpenRouter headers...', 'info');
+            
+            const url = `${WORKER_BASE}/api/v1/chat/completions`;
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`,
+                        'HTTP-Referer': 'https://legalragmexico.com',
+                        'X-Title': 'Legal RAG Mexico'
+                    },
+                    body: JSON.stringify({
+                        model: 'qwen/qwen3-235b-a22b-thinking-2507',
+                        messages: [{ role: 'user', content: 'test' }],
+                        max_tokens: 5
+                    })
+                });
+                
+                log('api-log', `Status: ${response.status}`, response.ok ? 'success' : 'error');
+                const data = await response.text();
+                log('api-log', `Response: ${data.substring(0, 500)}`, 'info');
+                
+            } catch (error) {
+                log('api-log', `Failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testMinimalRequest() {
+            clearLog('api-log');
+            log('api-log', 'Testing with minimal configuration...', 'info');
+            
+            // Try using a simpler model that might have better compatibility
+            const url = `${WORKER_BASE}/api/v1/chat/completions`;
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: 'openai/gpt-3.5-turbo',  // Try a simpler model
+                        messages: [{ role: 'user', content: 'Hi' }],
+                        max_tokens: 5
+                    })
+                });
+                
+                log('api-log', `Status: ${response.status}`, response.ok ? 'success' : 'error');
+                const data = await response.text();
+                log('api-log', `Response: ${data}`, 'info');
+                
+            } catch (error) {
+                log('api-log', `Failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test 4: Full diagnostics
+        async function runFullDiagnostics() {
+            clearLog('diag-log');
+            log('diag-log', '🔍 Running full diagnostics...', 'info');
+            log('diag-log', '', 'info');
+            
+            // Check browser info
+            log('diag-log', '📱 Browser Information:', 'info');
+            log('diag-log', `  User Agent: ${navigator.userAgent}`, 'info');
+            log('diag-log', `  Platform: ${navigator.platform}`, 'info');
+            log('diag-log', '', 'info');
+            
+            // Check worker configuration
+            log('diag-log', '⚙️ Worker Configuration:', 'info');
+            log('diag-log', `  Worker URL: ${WORKER_BASE}`, 'info');
+            log('diag-log', `  API Key: ${API_KEY.substring(0, 20)}...`, 'info');
+            log('diag-log', '', 'info');
+            
+            // Test connectivity
+            log('diag-log', '🌐 Testing connectivity...', 'info');
+            
+            // Test worker
+            try {
+                const workerResponse = await fetch(`${WORKER_BASE}/`, { method: 'HEAD' });
+                log('diag-log', `  Worker reachable: ✅ (${workerResponse.status})`, 'success');
+            } catch {
+                log('diag-log', `  Worker reachable: ❌`, 'error');
+            }
+            
+            // Test direct OpenRouter (will fail due to CORS, but shows network works)
+            try {
+                await fetch('https://openrouter.ai/', { method: 'HEAD', mode: 'no-cors' });
+                log('diag-log', `  Network connectivity: ✅`, 'success');
+            } catch {
+                log('diag-log', `  Network connectivity: ❌`, 'error');
+            }
+            
+            log('diag-log', '', 'info');
+            log('diag-log', '📋 Recommendations:', 'warning');
+            log('diag-log', '  1. Check worker logs in Cloudflare dashboard', 'warning');
+            log('diag-log', '  2. Verify worker is deployed to openrouter-proxy.emilio-perez.workers.dev', 'warning');
+            log('diag-log', '  3. Ensure worker code handles CORS headers correctly', 'warning');
+            log('diag-log', '  4. Check if API key is valid at https://openrouter.ai/keys', 'warning');
+        }
+    </script>
+</body>
+</html>

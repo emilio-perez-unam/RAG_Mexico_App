@@ -32,7 +32,7 @@ class ApiConstants {
   
   // OpenRouter API
   static const String openRouterBaseUrl = 'https://openrouter.ai/api/v1';
-  static const String openRouterModel = 'anthropic/claude-3-opus';
+  static const String openRouterModel = 'qwen/qwen3-235b-a22b-thinking-2507';
   
   // Milvus Endpoints
   static const String milvusSearchEndpoint = '/search';
@@ -129,34 +129,34 @@ class ApiConstants {
   static const Map<String, String> searchFilters = {
     'all': 'Todos',
     'recent': 'Recientes',
-    'relevant': 'Más Relevantes',
-    'cited': 'Más Citados',
+    'relevant': 'Mï¿½s Relevantes',
+    'cited': 'Mï¿½s Citados',
     'federal': 'Federal',
     'state': 'Estatal',
   };
   
   // Error Messages
   static const Map<String, String> errorMessages = {
-    'network_error': 'Error de conexión. Por favor verifica tu internet.',
-    'timeout_error': 'La solicitud tardó demasiado. Intenta de nuevo.',
-    'server_error': 'Error del servidor. Por favor intenta más tarde.',
-    'auth_error': 'Error de autenticación. Por favor inicia sesión nuevamente.',
-    'permission_error': 'No tienes permisos para realizar esta acción.',
+    'network_error': 'Error de conexiï¿½n. Por favor verifica tu internet.',
+    'timeout_error': 'La solicitud tardï¿½ demasiado. Intenta de nuevo.',
+    'server_error': 'Error del servidor. Por favor intenta mï¿½s tarde.',
+    'auth_error': 'Error de autenticaciï¿½n. Por favor inicia sesiï¿½n nuevamente.',
+    'permission_error': 'No tienes permisos para realizar esta acciï¿½n.',
     'validation_error': 'Por favor verifica los datos ingresados.',
-    'not_found': 'No se encontró el recurso solicitado.',
-    'rate_limit': 'Has excedido el límite de solicitudes. Espera un momento.',
-    'unknown_error': 'Ocurrió un error inesperado. Por favor intenta de nuevo.',
+    'not_found': 'No se encontrï¿½ el recurso solicitado.',
+    'rate_limit': 'Has excedido el lï¿½mite de solicitudes. Espera un momento.',
+    'unknown_error': 'Ocurriï¿½ un error inesperado. Por favor intenta de nuevo.',
   };
   
   // Success Messages
   static const Map<String, String> successMessages = {
-    'login_success': 'Inicio de sesión exitoso',
+    'login_success': 'Inicio de sesiï¿½n exitoso',
     'signup_success': 'Cuenta creada exitosamente',
-    'logout_success': 'Sesión cerrada exitosamente',
+    'logout_success': 'Sesiï¿½n cerrada exitosamente',
     'password_reset': 'Enlace de restablecimiento enviado',
     'profile_updated': 'Perfil actualizado exitosamente',
     'document_saved': 'Documento guardado exitosamente',
-    'query_saved': 'Búsqueda guardada exitosamente',
+    'query_saved': 'Bï¿½squeda guardada exitosamente',
     'citation_copied': 'Cita copiada al portapapeles',
   };
   

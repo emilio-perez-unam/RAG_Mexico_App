@@ -4,9 +4,9 @@ import '../../../../core/theme/text_styles.dart';
 
 class SearchBarWidget extends StatefulWidget {
   const SearchBarWidget({
-    Key? key,
+    super.key,
     required this.onSearch,
-  }) : super(key: key);
+  });
 
   final Function(String) onSearch;
 

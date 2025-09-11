@@ -1,9 +1,20 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:logger/logger.dart';
 
 /// Environment configuration class with hardcoded values
 /// No dependency on .env files - suitable for GitHub Pages deployment
 class EnvConfig {
   static late EnvConfig _instance;
+  
+  final Logger _logger = Logger(
+    printer: PrettyPrinter(
+      methodCount: 0,
+      errorMethodCount: 5,
+      lineLength: 50,
+      colors: true,
+      printEmojis: false,
+    ),
+  );
 
   // Private constructor
   EnvConfig._();
@@ -61,8 +72,13 @@ class EnvConfig {
   String get deepSeekApiKey => 'your_deepseek_api_key_here';
   String get deepSeekModel => 'deepseek-chat';
   String get openRouterApiKey =>
-      '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';
-  String get openRouterBaseUrl => 'https://openrouter.ai/api/v1';
+      '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';
+  
+  // Use Cloudflare Worker proxy for web platform to avoid CORS issues
+  String get openRouterBaseUrl => kIsWeb 
+      ? 'https://openrouter-proxy.emilio-perez.workers.dev/api/v1'  // Cloudflare Worker proxy
+      : 'https://openrouter.ai/api/v1';      // Direct API for mobile/desktop
+  
   String get openRouterModel => 'qwen/qwen3-235b-a22b-thinking-2507';
 
   String get openAIApiKey => 'your_openai_api_key_here';
@@ -98,10 +114,10 @@ class EnvConfig {
 
   /// Log current configuration (for debugging, excludes sensitive data)
   void logConfiguration() {
-    print('=== LegalTracking Configuration ===');
-    print('Environment: $appEnv');
-    print('Supabase URL: $supabaseUrl'); // Now reflects the secure URL
-    print('Vector Store: $vectorStoreType');
-    print('================================');
+    _logger.i('=== LegalTracking Configuration ===');
+    _logger.i('Environment: $appEnv');
+    _logger.i('Supabase URL: $supabaseUrl'); // Now reflects the secure URL
+    _logger.i('Vector Store: $vectorStoreType');
+    _logger.i('================================');
   }
 }

@@ -1,7 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:dartz/dartz.dart';
 import '../../core/errors/failures.dart';
-import '../../domain/entities/search_result.dart';
 import '../../domain/repositories/legal_search_repository.dart';
 
 /// History state enum

@@ -62,7 +62,7 @@ class InitializationErrorApp extends StatelessWidget {
   
 
   
-  const InitializationErrorApp({Key? key, required this.error}) : super(key: key);
+  const InitializationErrorApp({super.key, required this.error});
   
   @override
   Widget build(BuildContext context) {
@@ -94,7 +94,7 @@ class InitializationErrorApp extends StatelessWidget {
                 Text(
                   'The application failed to initialize properly.',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 16,
                   ),
                   textAlign: TextAlign.center,

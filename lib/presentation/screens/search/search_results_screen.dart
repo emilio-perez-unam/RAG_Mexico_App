@@ -1,8 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:share_plus/share_plus.dart';
-import '../../../core/constants/app_colors.dart';
-import '../../../core/theme/text_styles.dart';
 
 class SearchResultsScreen extends StatefulWidget {
   final String query;
@@ -280,26 +276,26 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                                     ],
                                   ),
                                   const SizedBox(height: 16),
-                                  Row(
+                                  const Row(
                                     children: [
                                       Text(
                                         'Generado: 14/07/2025 10:30',
                                         style: TextStyle(
-                                          color: const Color(0xFF6B7280),
+                                          color: Color(0xFF6B7280),
                                           fontSize: 12,
                                           fontFamily: 'Open Sans',
                                           fontWeight: FontWeight.w400,
                                           height: 1.33,
                                         ),
                                       ),
-                                      const SizedBox(width: 16),
-                                      const Icon(
+                                      SizedBox(width: 16),
+                                      Icon(
                                         Icons.info_outline,
                                         size: 12,
                                         color: Color(0xFF6B7280),
                                       ),
-                                      const SizedBox(width: 4),
-                                      const Expanded(
+                                      SizedBox(width: 4),
+                                      Expanded(
                                         child: Text(
                                           'Esta respuesta fue generada por inteligencia artificial y puede contener imprecisiones. '
                                           'La información proporcionada no constituye asesoría legal y no debe utilizarse como '
@@ -552,7 +548,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF10B981).withOpacity(0.1) : Colors.transparent,
+          color: isSelected ? const Color(0xFF10B981).withValues(alpha: 0.1) : Colors.transparent,
           border: Border.all(
             color: isSelected ? const Color(0xFF10B981) : const Color(0xFFE0E0E0),
           ),

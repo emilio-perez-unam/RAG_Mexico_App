@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:dartz/dartz.dart';
 import '../../core/errors/failures.dart';
 import '../../domain/entities/search_result.dart';
 import '../../domain/usecases/search_legal_documents.dart';
@@ -130,12 +129,12 @@ class SearchProvider extends ChangeNotifier {
 
   /// Map failure to user-friendly message
   String _mapFailureToMessage(Failure failure) {
-    switch (failure.runtimeType) {
-      case ServerFailure:
+    switch (failure) {
+      case ServerFailure _:
         return 'Server error. Please try again later.';
-      case CacheFailure:
+      case CacheFailure _:
         return 'Cache error. Please try again.';
-      case NetworkFailure:
+      case NetworkFailure _:
         return 'Network error. Please check your connection.';
       default:
         return 'An unexpected error occurred. Please try again.';

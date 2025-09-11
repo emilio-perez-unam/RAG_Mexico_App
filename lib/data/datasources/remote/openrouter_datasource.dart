@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:logger/logger.dart';
 
 /// Remote datasource for interacting with OpenRouter API
 class OpenRouterDatasource {
@@ -11,12 +13,21 @@ class OpenRouterDatasource {
   final String apiKey;
   final String baseUrl;
   final Dio dio;
+  final Logger _logger = Logger(
+    printer: PrettyPrinter(
+      methodCount: 0,
+      errorMethodCount: 5,
+      lineLength: 50,
+      colors: true,
+      printEmojis: false,
+    ),
+  );
 
   OpenRouterDatasource({
     required this.apiKey,
-    required this.baseUrl,
+    String? baseUrl,
     required this.dio,
-  });
+  }) : baseUrl = baseUrl ?? _baseUrl;
 
   /// Send a message to OpenRouter (alias for sendChatCompletion for compatibility)
   Future<OpenRouterResponse> sendMessage(
@@ -60,16 +71,24 @@ class OpenRouterDatasource {
       };
 
       // Debug logging
-      print('===== OPENROUTER REQUEST DEBUG =====');
-      print('URL: $baseUrl/chat/completions');
-      print('Model: ${model ?? _defaultModel}');
-      print('API Key (first 20 chars): ${apiKey.substring(0, 20)}...');
-      print('Messages count: ${messages.length}');
-      print('Temperature: ${temperature ?? _defaultTemperature}');
-      print('Max tokens: ${maxTokens ?? _defaultMaxTokens}');
-      print('====================================');
+      _logger.d('===== OPENROUTER REQUEST DEBUG =====');
+      _logger.d('URL: $baseUrl/chat/completions');
+      _logger.d('Model: ${model ?? _defaultModel}');
+      _logger.d('API Key (first 20 chars): ${apiKey.substring(0, 20)}...');
+      _logger.d('Messages count: ${messages.length}');
+      _logger.d('Temperature: ${temperature ?? _defaultTemperature}');
+      _logger.d('Max tokens: ${maxTokens ?? _defaultMaxTokens}');
+      _logger.d('====================================');
 
-      print('Sending request to OpenRouter...');
+      _logger.i('Sending request to OpenRouter...');
+      
+      // For web platform, you need a backend proxy or edge function
+      // Direct API calls will fail due to CORS
+      if (kIsWeb) {
+        _logger.w('WARNING: Direct OpenRouter API calls on web platform will fail due to CORS.');
+        _logger.w('Configure a backend proxy or Supabase Edge Function for production.');
+      }
+      
       final response = await dio.post(
         '$baseUrl/chat/completions',
         options: Options(
@@ -79,16 +98,16 @@ class OpenRouterDatasource {
             'X-Title': 'Legal RAG Mexico',
             'Content-Type': 'application/json',
           },
-          receiveTimeout: Duration(seconds: 60),
-          sendTimeout: Duration(seconds: 30),
+          receiveTimeout: const Duration(seconds: 60),
+          sendTimeout: const Duration(seconds: 30),
         ),
         data: requestBody,
       );
-      print('Response received from OpenRouter');
+      _logger.i('Response received from OpenRouter');
 
       if (response.statusCode == 200) {
         var data = response.data;
-        print('===== OPENROUTER SUCCESS RESPONSE =====');
+        _logger.d('===== OPENROUTER SUCCESS RESPONSE =====');
         
         // Handle string response that might have extra whitespace
         if (data is String) {
@@ -96,16 +115,16 @@ class OpenRouterDatasource {
           final jsonStartIndex = data.indexOf('{');
           if (jsonStartIndex != -1) {
             final cleanJson = data.substring(jsonStartIndex);
-            print('Cleaned JSON: ${cleanJson.substring(0, 200)}...');
+            _logger.d('Cleaned JSON: ${cleanJson.substring(0, 200)}...');
             data = json.decode(cleanJson);
           } else {
-            print('ERROR: No JSON found in response');
+            _logger.e('ERROR: No JSON found in response');
             throw OpenRouterException('Invalid response format');
           }
         }
         
-        print('Parsed data type: ${data.runtimeType}');
-        print('========================================');
+        _logger.d('Parsed data type: ${data.runtimeType}');
+        _logger.d('========================================');
         return OpenRouterResponse.fromJson(data);
       } else {
         throw OpenRouterException(
@@ -114,10 +133,10 @@ class OpenRouterDatasource {
         );
       }
     } on DioException catch (e) {
-      print('===== OPENROUTER ERROR =====');
-      print('Status Code: ${e.response?.statusCode}');
-      print('Error Message: ${e.response?.data}');
-      print('============================');
+      _logger.e('===== OPENROUTER ERROR =====');
+      _logger.e('Status Code: ${e.response?.statusCode}');
+      _logger.e('Error Message: ${e.response?.data}');
+      _logger.e('============================');
       
       if (e.response?.statusCode == 401) {
         throw OpenRouterException('Authentication failed. Please check your API key.');
@@ -132,6 +151,10 @@ class OpenRouterDatasource {
   /// Get available models
   Future<List<OpenRouterModel>> getAvailableModels() async {
     try {
+      if (kIsWeb) {
+        _logger.w('WARNING: Direct OpenRouter API calls on web platform will fail due to CORS.');
+      }
+      
       final response = await dio.get(
         '$baseUrl/models',
         options: Options(

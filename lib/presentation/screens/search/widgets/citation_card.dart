@@ -9,11 +9,11 @@ class CitationCard extends StatefulWidget {
   final VoidCallback onViewDocument;
 
   const CitationCard({
-    Key? key,
+    super.key,
     required this.source,
     required this.onCopy,
     required this.onViewDocument,
-  }) : super(key: key);
+  });
 
   @override
   State<CitationCard> createState() => _CitationCardState();

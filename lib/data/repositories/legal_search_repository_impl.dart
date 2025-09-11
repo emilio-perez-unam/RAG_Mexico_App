@@ -1,6 +1,5 @@
 import 'package:dartz/dartz.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'dart:math';
 
 import '../../core/errors/failures.dart';
 import '../../domain/entities/legal_document.dart';

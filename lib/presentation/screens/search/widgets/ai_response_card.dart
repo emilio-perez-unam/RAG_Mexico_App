@@ -9,9 +9,9 @@ import '../../../widgets/common/confidence_badge.dart';
 
 class AIResponseCard extends StatefulWidget {
   const AIResponseCard({
-    Key? key,
+    super.key,
     required this.response,
-  }) : super(key: key);
+  });
 
   final AIResponse response;
 
@@ -165,7 +165,7 @@ class _AIResponseCardState extends State<AIResponseCard> {
           color: isSelected ? AppColors.primaryGreen : AppColors.borderColor,
         ),
         backgroundColor:
-            isSelected ? AppColors.primaryGreen.withOpacity(0.1) : null,
+            isSelected ? AppColors.primaryGreen.withValues(alpha: 0.1) : null,
       ),
     );
   }
@@ -196,7 +196,7 @@ class _AIResponseCardState extends State<AIResponseCard> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
+                const Text(
                   'Búsqueda Legal México RAG',
                   style: AppTextStyles.heading1,
                 ),

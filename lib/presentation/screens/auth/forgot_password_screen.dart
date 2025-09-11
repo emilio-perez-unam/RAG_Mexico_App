@@ -4,7 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../providers/auth_provider.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
-  const ForgotPasswordScreen({Key? key}) : super(key: key);
+  const ForgotPasswordScreen({super.key});
 
   @override
   State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
@@ -98,7 +98,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     _emailSent
                         ? 'Hemos enviado un enlace de restablecimiento a tu correo electrónico.'
                         : 'Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 16,
                       color: AppColors.textSecondary,
                     ),
@@ -255,7 +255,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               ),
                             ),
                             const SizedBox(height: 24),
-                            Text(
+                            const Text(
                               'Si no recibes el correo en unos minutos, revisa tu carpeta de spam.',
                               style: TextStyle(
                                 color: AppColors.textSecondary,
@@ -312,7 +312,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
+                        const Text(
                           '¿Recordaste tu contraseña? ',
                           style: TextStyle(color: AppColors.textSecondary),
                         ),

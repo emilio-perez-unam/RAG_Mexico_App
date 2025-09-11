@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../data/datasources/remote/auth_datasource.dart';
 import '../../domain/repositories/auth_repository.dart';
 
 /// Authentication state enum

@@ -7,10 +7,10 @@ class FilterProvider extends ChangeNotifier {
   DateTime? _endDate;
 
   // Document type filters
-  Set<String> _documentTypes = {};
+  final Set<String> _documentTypes = {};
 
   // Jurisdiction filters
-  Set<String> _jurisdictions = {};
+  final Set<String> _jurisdictions = {};
 
   // Relevance score threshold
   double _minRelevanceScore = 0.0;

@@ -16,9 +16,9 @@ class UserMessageBubble extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 16, left: 80),
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: AppColors.primaryBlue,
-          borderRadius: const BorderRadius.only(
+          borderRadius: BorderRadius.only(
             topLeft: Radius.circular(16),
             topRight: Radius.circular(16),
             bottomLeft: Radius.circular(16),

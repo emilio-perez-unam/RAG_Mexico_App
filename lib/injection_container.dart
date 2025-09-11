@@ -143,9 +143,9 @@ Future<void> _initExternal() async {
 
     // Dio
     final dio = Dio(BaseOptions(
-      connectTimeout: Duration(milliseconds: 30000), // Example timeout
-      receiveTimeout: Duration(milliseconds: 30000),
-      sendTimeout: Duration(milliseconds: 30000),
+      connectTimeout: const Duration(milliseconds: 30000), // Example timeout
+      receiveTimeout: const Duration(milliseconds: 30000),
+      sendTimeout: const Duration(milliseconds: 30000),
     ));
 
     // Logging is useful for development, so we enable it directly here.

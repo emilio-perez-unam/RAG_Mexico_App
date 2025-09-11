@@ -14,7 +14,7 @@ class DeepSeekDatasource {
   DeepSeekDatasource({
     required this.apiKey,
     http.Client? httpClient,
-  }) : this.httpClient = httpClient ?? http.Client();
+  }) : httpClient = httpClient ?? http.Client();
 
   /// Send a message to DeepSeek-R1 (alias for sendChatCompletion for compatibility)
   Future<DeepSeekResponse> sendMessage(

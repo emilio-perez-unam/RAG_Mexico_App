@@ -136,7 +136,7 @@ class DocumentRepositoryImpl implements DocumentRepository {
       );
 
       if (documents.isEmpty) {
-        return Left(ServerFailure('Document not found'));
+        return const Left(ServerFailure('Document not found'));
       }
 
       return Right(LegalDocument.fromJson(documents.first));
@@ -216,7 +216,7 @@ class DocumentRepositoryImpl implements DocumentRepository {
       );
 
       if (documents.isEmpty) {
-        return Left(ServerFailure('No documents found'));
+        return const Left(ServerFailure('No documents found'));
       }
 
       return Right(LegalDocument.fromJson(documents.first));

@@ -6,9 +6,9 @@ class ConfidenceBadge extends StatelessWidget {
   final double confidence;
 
   const ConfidenceBadge({
-    Key? key,
+    super.key,
     required this.confidence,
-  }) : super(key: key);
+  });
 
   Color _getColor() {
     if (confidence >= 0.85) return AppColors.successGreen;
