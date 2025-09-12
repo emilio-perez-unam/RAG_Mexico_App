@@ -72,7 +72,7 @@ class EnvConfig {
   String get deepSeekApiKey => 'your_deepseek_api_key_here';
   String get deepSeekModel => 'deepseek-chat';
   String get openRouterApiKey =>
-      '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';
+      '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';
   
   // Use Cloudflare Worker proxy for web platform to avoid CORS issues
   String get openRouterBaseUrl => kIsWeb 
