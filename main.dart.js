@@ -84055,7 +84055,7 @@ A.qI.prototype={
 am(){var s=null
 return new A.Gq(new A.nP(B.fq,$.at()),A.Pg(),A.pD(!0,s,!0,!0,s,s,!1),A.c([],t.SU),A.k7(s),A.c(["\u2696\ufe0f An\xe1lisis constitucional del amparo contra leyes heteroaplicativas vs autoaplicativas","\ud83d\udcdc Interpretaci\xf3n del art\xedculo 14 constitucional y el principio de irretroactividad","\ud83c\udfdb\ufe0f Control difuso de constitucionalidad post-reforma 2011: alcances y l\xedmites","\ud83d\udcca Contradicci\xf3n de tesis 293/2011: jerarqu\xeda de tratados internacionales"],t.s),s,s)}}
 A.Gq.prototype={
-az(){var s,r,q,p,o,n=this,m=null,l="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"
+az(){var s,r,q,p,o,n=this,m=null,l="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"
 n.aT()
 s=A.cc(m,B.dA,m,m,n)
 n.y=s
