@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qwen Model Test - Legal RAG Mexico</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-height: 500px;
+            overflow-y: auto;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border: 2px solid #333;
+        }
+        .success { color: #4ec9b0; }
+        .error { color: #f48771; }
+        .info { color: #dcdcaa; }
+        .warning { color: #ce9178; }
+        .model-info {
+            background: #e8f4fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .cost-warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Qwen Model Verification</h1>
+        <div class="subtitle">Legal RAG Mexico - Testing Qwen/qwen3-235b-a22b-thinking-2507</div>
+        
+        <div class="model-info">
+            <strong>✅ Current Configuration:</strong><br>
+            • Model: <code>qwen/qwen3-235b-a22b-thinking-2507</code><br>
+            • Max Tokens: <code>64,000</code><br>
+            • Temperature: <code>0.3</code> (for consistent legal responses)<br>
+            • Proxy: <code>openrouter-proxy.emilio-perez.workers.dev</code>
+        </div>
+        
+        <div class="cost-warning">
+            <strong>⚠️ Cost Protection Active:</strong><br>
+            • All Claude references have been removed<br>
+            • Only Qwen model will be used<br>
+            • No automatic fallback to expensive models
+        </div>
+        
+        <div class="test-section">
+            <h3>1. Test Worker & Model Configuration</h3>
+            <button onclick="testWorkerHealth()">Test Worker Health</button>
+            <button onclick="testQwenModel()">Test Qwen Model</button>
+            <button onclick="testLegalResponse()">Test Legal Response</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>2. Verify Model Lock</h3>
+            <button onclick="verifyNoClaudeAccess()">Verify Claude is Blocked</button>
+            <button onclick="testModelConsistency()">Test Response Consistency</button>
+        </div>
+        
+        <div id="status" class="status">
+<span class="info">Ready to test Qwen model configuration...</span>
+<span class="info">API Key: sk-or-v1-9a19...5911</span>
+<span class="info">Worker: openrouter-proxy.emilio-perez.workers.dev</span>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = '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';
+        const WORKER_URL = 'https://openrouter-proxy.emilio-perez.workers.dev/api/v1/chat/completions';
+        const QWEN_MODEL = 'qwen/qwen3-235b-a22b-thinking-2507';
+        
+        function log(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            const timestamp = new Date().toLocaleTimeString();
+            statusDiv.innerHTML += `\n<span class="${type}">[${timestamp}] ${message}</span>`;
+            statusDiv.scrollTop = statusDiv.scrollHeight;
+        }
+        
+        function clearLog() {
+            document.getElementById('status').innerHTML = '';
+        }
+        
+        async function testWorkerHealth() {
+            clearLog();
+            log('Testing worker health...', 'info');
+            
+            try {
+                const response = await fetch('https://openrouter-proxy.emilio-perez.workers.dev/', {
+                    method: 'GET'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('✅ Worker is healthy!', 'success');
+                    log(`Response: ${JSON.stringify(data, null, 2)}`, 'info');
+                } else {
+                    log(`❌ Worker returned status: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Worker test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testQwenModel() {
+            clearLog();
+            log(`Testing Qwen model: ${QWEN_MODEL}`, 'info');
+            log('Sending simple test request...', 'info');
+            
+            const startTime = Date.now();
+            
+            try {
+                const response = await fetch(WORKER_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`,
+                        'HTTP-Referer': 'https://legalragmexico.com',
+                        'X-Title': 'Legal RAG Mexico'
+                    },
+                    body: JSON.stringify({
+                        model: QWEN_MODEL,
+                        messages: [
+                            { 
+                                role: 'user', 
+                                content: 'Respond with exactly: "Qwen model active"' 
+                            }
+                        ],
+                        max_tokens: 10,
+                        temperature: 0.1
+                    })
+                });
+                
+                const responseTime = Date.now() - startTime;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`✅ Qwen model responded in ${responseTime}ms`, 'success');
+                    log(`Model used: ${data.model}`, 'info');
+                    
+                    if (data.choices && data.choices[0]) {
+                        log(`Response: "${data.choices[0].message.content}"`, 'success');
+                    }
+                    
+                    // Check if it's actually using Qwen
+                    if (data.model && data.model.includes('qwen')) {
+                        log('✅ Confirmed: Using Qwen model', 'success');
+                    } else if (data.model && data.model.includes('claude')) {
+                        log('❌ WARNING: Claude model detected!', 'error');
+                    }
+                } else {
+                    const error = await response.text();
+                    log(`❌ API Error: ${response.status}`, 'error');
+                    log(`Details: ${error}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Request failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testLegalResponse() {
+            clearLog();
+            log('Testing legal response quality with Qwen...', 'info');
+            log('Requesting brief legal analysis...', 'info');
+            
+            try {
+                const response = await fetch(WORKER_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`,
+                        'HTTP-Referer': 'https://legalragmexico.com',
+                        'X-Title': 'Legal RAG Mexico'
+                    },
+                    body: JSON.stringify({
+                        model: QWEN_MODEL,
+                        messages: [
+                            { 
+                                role: 'system', 
+                                content: 'Eres un experto en derecho mexicano. Responde de manera breve y técnica.' 
+                            },
+                            { 
+                                role: 'user', 
+                                content: 'Define "amparo directo" en 20 palabras o menos.' 
+                            }
+                        ],
+                        max_tokens: 50,
+                        temperature: 0.3
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('✅ Legal response received', 'success');
+                    log(`Model: ${data.model}`, 'info');
+                    
+                    if (data.choices && data.choices[0]) {
+                        log(`\nLegal Response:\n"${data.choices[0].message.content}"`, 'success');
+                    }
+                    
+                    // Token usage info
+                    if (data.usage) {
+                        log(`\nTokens used: ${data.usage.total_tokens}`, 'info');
+                    }
+                } else {
+                    const error = await response.text();
+                    log(`❌ Failed: ${error}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function verifyNoClaudeAccess() {
+            clearLog();
+            log('Verifying Claude model is not accessible...', 'warning');
+            
+            try {
+                const response = await fetch(WORKER_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: 'anthropic/claude-3-opus',  // Try to use Claude
+                        messages: [
+                            { role: 'user', content: 'test' }
+                        ],
+                        max_tokens: 5
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('⚠️ Claude request succeeded - CHECK YOUR COSTS!', 'error');
+                    log(`Model used: ${data.model}`, 'error');
+                } else {
+                    log('✅ Good! Claude request failed as expected', 'success');
+                    const error = await response.text();
+                    log(`Error: ${error.substring(0, 200)}`, 'info');
+                }
+            } catch (error) {
+                log('✅ Claude access blocked', 'success');
+            }
+        }
+        
+        async function testModelConsistency() {
+            clearLog();
+            log('Testing response consistency (3 requests)...', 'info');
+            
+            const testPrompt = 'What is 2+2? Answer with just the number.';
+            const responses = [];
+            
+            for (let i = 1; i <= 3; i++) {
+                log(`\nRequest ${i}/3...`, 'info');
+                
+                try {
+                    const response = await fetch(WORKER_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${API_KEY}`
+                        },
+                        body: JSON.stringify({
+                            model: QWEN_MODEL,
+                            messages: [
+                                { role: 'user', content: testPrompt }
+                            ],
+                            max_tokens: 5,
+                            temperature: 0.1  // Low temperature for consistency
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const answer = data.choices[0].message.content;
+                        responses.push(answer);
+                        log(`Response ${i}: "${answer}"`, 'success');
+                    }
+                } catch (error) {
+                    log(`Request ${i} failed: ${error.message}`, 'error');
+                }
+            }
+            
+            // Check consistency
+            if (responses.length === 3) {
+                const allSame = responses.every(r => r === responses[0]);
+                if (allSame) {
+                    log('\n✅ All responses consistent!', 'success');
+                } else {
+                    log('\n⚠️ Responses vary slightly (normal for LLMs)', 'warning');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
